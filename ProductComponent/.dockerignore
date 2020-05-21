@@ -1,0 +1,16 @@
+.git
+.gitignore
+node_modules
+npm-debug.log
+.dockerignore
+.envrc
+.env
+__tests__
+.circleci
+coverage
+.nvmrc
+*.pem
+docker.bash
+enzyme.config.js
+jest.config.js
+STYLE-GUIDE.md

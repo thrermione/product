@@ -1,0 +1,46 @@
+version: '2.1'
+services:
+  db:
+    container_name: database
+    image: mysql:5.7.29
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+      MYSQL_DATABASE: 'product_component'
+    volumes:
+      - my-db:/var/lib/mysql
+    networks:
+      - backend
+
+  product_component:
+    container_name: product_component
+    build: .
+    environment:
+      - ./options.env
+    volumes:
+      - ${PWD}/:/src/app
+    networks:
+      - frontend
+      - backend
+    ports:
+      - "3002:3002"
+    depends_on:
+      - db
+
+  proxy_server:
+    container_name: proxy_server
+    build: ../JoeyProxyServer/
+    volumes:
+      - ${PWD}/:/src/proxyServer
+    networks:
+      - frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - product_component
+
+networks:
+  frontend:
+  backend:
+
+volumes:
+  my-db: {}
