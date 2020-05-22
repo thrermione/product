@@ -3,7 +3,6 @@
   without constraints to speed up the load process, then put in the constraints.
 */
 
-
 DROP TABLE IF EXISTS products;
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
@@ -85,9 +84,7 @@ CREATE TABLE wishlists (
   product_id INT
 );
 
-
 -- Unique Constraints
-
 -- user carts
 ALTER TABLE carts_products DROP CONSTRAINT IF EXISTS fk_product_id;
 ALTER TABLE carts_products ADD CONSTRAINT fk_product_id FOREIGN KEY (product_id) REFERENCES products (id);
