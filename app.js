@@ -1,18 +1,20 @@
 // https://www.youtube.com/watch?v=zNjVFOo3eO0
 const express = require('express');
 const bodyParser = require('body-parser');
+const { Client } = require('pg');
 
 const port = process.env.PORT || 5432;
 const user = process.env.DBUSER || 'productservice';
 const password = process.env.PASSWORD || 'cocacola';
 const host = process.env.HOST || 'localhost';
-const database = process.env.DATABASE || 'productservice';
+const database = process.env.DATABASE || '';
 const serverport = process.env.PORT || 3000;
 
+const app = express();
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+const routes = require('./routes.js')(app);
 
-const { Client } = require('pg');
-
-//create a client object
 const client = new Client({
   user,
   password,
@@ -29,12 +31,7 @@ client.connect()
     console.error(`Error connecting to database: ${error}`)
   })
 
-const app = express();
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended: true}));
-
-var routes = require('./routes.js')(app);
-
 var server = app.listen(serverport, function(){
   console.log( `Server running on ${serverport}!!`);
 });
+
