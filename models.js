@@ -1,6 +1,3 @@
-var uuid = require('uuid');
-var n1qlQuery = require('couchbase').n1qlQuery;
-var bucket = require('./app').bucket;
 
 function ProductModel() {
 };
