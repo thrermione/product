@@ -22,8 +22,8 @@ const client = new Client({
 });
 
 client.connect()
-  .then(function() => {
-    console.log(`Connected to database on port ${port)}`);
+  .then(()=> {
+    console.log(`Connected to database on port ${port}`);
   })
   .catch((error)=>{
     console.error(`Error connecting to database: ${error}`)
@@ -33,11 +33,8 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-
-
-console.log(cluster);
 var routes = require('./routes.js')(app);
 
 var server = app.listen(serverport, function(){
-  console.log( `Server running on ${port}!!`);
+  console.log( `Server running on ${serverport}!!`);
 });
