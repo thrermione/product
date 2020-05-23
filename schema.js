@@ -5,7 +5,7 @@ CREATE TABLE products (
   price FLOAT,
   sku VARCHAR,
   viewcount INT,
-  created_at TIMESTAMP
+  created_at INT
 );
 
 DROP TABLE IF EXISTS locations;
@@ -40,7 +40,7 @@ CREATE TABLE products_stores (
   store_id INT,
   quantity_in_stock INT,
   order_interval INT, /* amount of seconds */
-  created_at TIMESTAMP
+  created_at INT
 );
 
 DROP TABLE IF EXISTS users;
@@ -53,7 +53,7 @@ DROP TABLE IF EXISTS carts;
 CREATE TABLE IF NOT EXISTS carts (
   id SERIAL PRIMARY KEY,
   user_id INT,
-  created_at TIMESTAMP
+  created_at INT
 );
 
 DROP TABLE IF EXISTS carts_products;
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS carts_products (
   product_id INT,
   cart_id INT,
   quantity INT,
-  added_on TIMESTAMP
+  added_on INT
 );
 
 DROP TABLE IF EXISTS wishlists;

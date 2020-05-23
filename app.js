@@ -38,6 +38,12 @@ client.connect()
         FROM '${filepath}/products.csv'
         WITH (format csv, header)
       `)
+      .then((res)=>{
+        console.log("finito")
+      })
+      .catch((err)=>{
+        console.error("we done goofed" + err);
+      })
     })
     .catch(function(error) {
       console.error(error);

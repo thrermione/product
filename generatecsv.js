@@ -2,11 +2,19 @@ const fs = require('fs');
 const csv = require('csv-write-stream'); 
 const faker = require('faker');
 
-// create a lookup table to make, idk, 1 million "random" numbers.
+const start = process.hrtime();
+
+// lookup tables to make random numbers pre-loaded.
 let lut10 = [];
 let luti = 0;
-for ( let i = 0; i < 1e6; i ++ ) {
+for ( let i = 0; i < 1000; i += 1 ) {
   lut10.push(Math.random()*9|0)
+}
+
+let lut1k = [];
+let lutk = 0;
+for ( let i = 0; i < 1000000; i += 1 ) {
+  lut1k.push(Math.random()*1000|0)
 }
 
 const rand10 = function() {
@@ -14,6 +22,13 @@ const rand10 = function() {
     luti = 0;
   }
   return lut10[++luti];
+}
+
+const rand1k = function() {
+  if( lutk === lut1k.length ) {
+    lutk = 0;
+  }
+  return lut1k[++lutk];
 }
 
 const pickrand = function( selection ){
@@ -49,9 +64,9 @@ const addressType = function() {
 }
 
 const products = csv();
-products.pipe(fs.createWriteStream('products.csv'));
+products.pipe(fs.createWriteStream('csvs/products.csv'));
 // spinal tap to 10M later
-for( var i = 1; i < 10000000; i++ ) {
+for( var i = 1; i < 10000000; i+= 1 ) {
   products.write({
     id: i,
     name: faker.commerce.productName(),
@@ -64,9 +79,8 @@ for( var i = 1; i < 10000000; i++ ) {
 products.end();
 
 const stores = csv();
-stores.pipe(fs.createWriteStream('stores.csv'));
-// Crank to 12k later, ala Wal Mart
-for( var j = 1; j < 10000; j++ ) {
+stores.pipe(fs.createWriteStream('csvs/stores.csv'));
+for( var j = 1; j < 10001; j+= 1 ) {
   stores.write({
     id: j,
     name: faker.commerce.department(),
@@ -76,14 +90,14 @@ for( var j = 1; j < 10000; j++ ) {
     street_type: streetType(),
     street_direction: streetDirection(),
     address_type: addressType(),
-    city_id: ,
+    city_id: rand1k(),
   })
 }
 stores.end();
 
 const cities = csv();
-cities.pipe(fs.createWriteStream('cities.csv'));
-for( var k = 1; k < 1000; k++ ) {
+cities.pipe(fs.createWriteStream('csvs/cities.csv'));
+for( var k = 1; k < 1001; k+=1 ) {
   cities.write({
     id: k,
     name: faker.address.city(),
@@ -91,7 +105,7 @@ for( var k = 1; k < 1000; k++ ) {
     country: 'United States',
     latitude: faker.address.latitude(),
     longitude: faker.address.longitude(),
-    postal_code: rand(11111,99999)
+    postal_code: faker.address.zipCode(),
   })
 }
 cities.end();
