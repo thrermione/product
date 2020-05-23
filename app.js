@@ -1,8 +1,8 @@
 // https://www.youtube.com/watch?v=zNjVFOo3eO0
 const express = require('express');
 const bodyParser = require('body-parser');
+const path = require('path');
 const { Client } = require('pg');
-
 const loadSchema = require('./schema.js');
 
 const port = process.env.PORT || 5432;
@@ -11,6 +11,8 @@ const password = process.env.PASSWORD || 'cocacola';
 const host = process.env.HOST || 'localhost';
 const database = process.env.DATABASE || '';
 const serverport = process.env.PORT || 3000;
+
+const filepath = path.join(__dirname, 'csvs' )
 
 const app = express();
 app.use(bodyParser.json());
@@ -30,7 +32,12 @@ client.connect()
     console.log(`Connected to database on port ${port}`);
     client.query(loadSchema)
     .then(function(response) {
-      console.log(response);
+      // use COPY to load the csv.
+      client.query(`
+        COPY products
+        FROM '${filepath}/products.csv'
+        WITH (format csv, header)
+      `)
     })
     .catch(function(error) {
       console.error(error);
@@ -43,4 +50,3 @@ client.connect()
 var server = app.listen(serverport, function(){
   console.log( `Server running on ${serverport}!!`);
 });
-
