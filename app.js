@@ -44,7 +44,7 @@ client.connect()
       .catch((err)=>{
         console.error("we done goofed" + err);
       })
-    })
+    }) 
     .catch(function(error) {
       console.error(error);
     })
