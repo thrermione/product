@@ -3,11 +3,13 @@
   without constraints to speed up the load process, then put in the constraints.
 */
 
+-- drop database if exists so you dont have to constantly drop tables
+
 DROP TABLE IF EXISTS products;
 CREATE TABLE products (
   id SERIAL PRIMARY KEY,
   name VARCHAR,
-  price FLOAT,
+  price FLOAT, /* more precise data type, decimal or number */
   sku VARCHAR,
   viewcount INT,
   created_at TIMESTAMP,
@@ -64,8 +66,7 @@ DROP TABLE IF EXISTS carts;
 CREATE TABLE IF NOT EXISTS carts (
   id SERIAL PRIMARY KEY,
   user_id INT,
-  created_at TIMESTAMP,
-  checkout_status VARCHAR, /* some means of sales funnel monitoring */
+  created_at TIMESTAMP
 );
 
 DROP TABLE IF EXISTS carts_products;
