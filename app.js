@@ -3,7 +3,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { Client } = require('pg');
 
-const schema = require('./schema.js');
+const loadSchema = require('./schema.js');
 
 const port = process.env.PORT || 5432;
 const user = process.env.DBUSER || 'productservice';
@@ -28,7 +28,7 @@ const client = new Client({
 client.connect()
   .then(()=> {
     console.log(`Connected to database on port ${port}`);
-    client.query(schema)
+    client.query(loadSchema)
     .then(function(response) {
       console.log(response);
     })
