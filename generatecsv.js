@@ -60,7 +60,7 @@ for( var j = 1; j < 11500; j++ ) {
     name: faker.commerce.department(),
     street_number: faker.random.number(),
     street_number_suffix: streetSuffix(),
-    street_name: faker.random.streetName(),
+    street_name: faker.address.streetName(),
     street_type: streetType(),
     street_direction: streetDirection(),
     address_type: addressType(),

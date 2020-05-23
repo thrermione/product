@@ -3,6 +3,8 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { Client } = require('pg');
 
+const schema = require('./schema.js');
+
 const port = process.env.PORT || 5432;
 const user = process.env.DBUSER || 'productservice';
 const password = process.env.PASSWORD || 'cocacola';
@@ -26,6 +28,13 @@ const client = new Client({
 client.connect()
   .then(()=> {
     console.log(`Connected to database on port ${port}`);
+    client.query(schema)
+    .then(function(response) {
+      console.log(response);
+    })
+    .catch(function(error) {
+      console.error(error);
+    })
   })
   .catch((error)=>{
     console.error(`Error connecting to database: ${error}`)
