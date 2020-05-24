@@ -14,13 +14,13 @@ const host = process.env.HOST || 'localhost';
 const filepath = path.join(__dirname, '..' , 'lib', 'csv');
 const MongoController = {
 
-  createClient: function() {
-    return MongoClient.connect( `mongodb://${host}:${port}/${database}`, function(err, database) {
+  createClient: function(callback) {
+    MongoClient.connect( `mongodb://${host}:${port}/${database}`, function(err, database) {
       if (err) {
         return console.error(err);
       }
       console.log(`MongoDB connection established`);
-      return database;
+      callback(database);
     })
   },
 
@@ -28,11 +28,13 @@ const MongoController = {
     console.log( "connect and seed is triggered.");
         // connect to the client , do 1k per batch.
     let dataToWrite = [];
-    let stream = fs.createReadStream(`${filepath}/products.csv`);
+    let readProducts = fs.createReadStream(`${filepath}/products.csv`);
+    let writeProducts = fs.create
     let csvStream = csv.createStream();
+    let i = 0;
 
-    stream.pipe(csvStream)
-     .on('error', (error) => {
+    readProducts.pipe(csvStream)
+      .on('error', (error) => {
           console.error(error);
         })
       .on('data', (data) => {
@@ -46,39 +48,22 @@ const MongoController = {
           postal_code: data[6]
         };
         dataToWrite.push(row);
-        console.log( data.id );
+
+        if( dataToWrite.length === 100000 ) {
+          console.log('Writing rows');
+          client.bulkWrite(dataToWrite)
+          .then((res) => {
+            console.log( "Batch of products written" );
+            dataToWrite = [];
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+        }
       })
       .on('end', (rowCount) => {
         console.log(`Parsed ${rowCount} rows`);
       });
-
-    /*
-    let stream = fs.createReadStream(`${filepath}/products.csv`);
-    const parseRows = function(batch){
-      stream.pipe(fastcsv.parse({ skipRows: batch, maxRows: 1000 }))
-        .on('error', (error) => {
-          console.error(error);
-        })
-        .on('data', (data) => {
-          const row = {
-            id: data[0],
-            name: data[1],
-            governing_district: data[2],
-            country: data[3],
-            latitude: data[4],
-            longitude: data[5],
-            postal_code: data[6]
-          };
-          dataToWrite.push(row);
-        })
-        .on('end', rowCount => {
-          console.log(`Parsed ${rowCount} rows from ${batch}`);
-        });
-    }
-    for( var i = 0; i < 10000000; i += 1000 ) {
-      parseRows(i);
-    }
-    */
   }
 }
 
