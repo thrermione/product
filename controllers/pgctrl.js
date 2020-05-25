@@ -1,5 +1,5 @@
 const path = require('path');
-const { client: Client } = require('pg');
+const {Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
 
 const port = process.env.PGPORT || 5432;
