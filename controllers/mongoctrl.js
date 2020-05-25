@@ -4,6 +4,7 @@ const path = require('path');
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const csv = require('csv-stream');
+const { rand1k } = require('../lib/randomluts.js');
 
 const port = process.env.MONGOPORT || 27017;
 const user = process.env.DBUSER || 'productservice';
@@ -15,17 +16,13 @@ const filepath = path.join(__dirname, '..' , 'lib', 'csv');
 const MongoController = {
 
   createClient: function() {
-    console.log("making new client"); 
     return new MongoClient(`mongodb://${host}`);
-    // MongoClient.connect( `mongodb://${host}:${port}/${database}`, function(err, client) {
-    //   if (err) {
-    //     return console.error(err);
-    //   }
-    //   console.log(`MongoDB connection established`);
-    //   callback(client.db);
-    // })
     const products = db.collection('products');
-
+    const stores = db.collection('stores');
+    const locations = db.collection('locations');
+    products.drop();
+    stores.drop();
+    locations.drop();
   },
 
   connectAndSeed: function(client) {
@@ -35,40 +32,83 @@ const MongoController = {
         return;
       }
 
-      console.log('Connected to mongodb server');
       const db = client.db(database);
       let readProducts = fs.createReadStream(`${filepath}/products.csv`);
+      let readStores = fs.createReadStream(`${filepath}/stores.csv`);
+      let readCities = fs.createReadStream(`${filepath}/cities.csv`);
       let csvStream = csv.createStream();
-
-      db.createCollection('products',
-      {
-        id: Number,
-        name: String,
-        price: Number,
-        sku: String,
-        view_count: Number,
-        created_at: Number
-      });
-      let dataToWrite = [];
-      let count = 0;
+      let storeStream = csv.createStream();
 
       const products = db.collection('products');
+      const stores = db.createCollection('stores');
 
-        readProducts.pipe(csvStream)
+      let productRows = [];
+      let count = 0;
+
+      //Let's make 10K stores with their locations.
+
+      let cities = [];
+      let storelist = [];
+      readCities.pipe(csvStream)
+        .on('error', (error) => {
+          console.error(error);
+        })
+        .on('data', (data) => {
+          cities.push(data);
+        })
+        .on('end', (rowCount) => {
+          console.log( `${rowCount} cities parsed. Loading stores.`);
+          readStores.pipe(storeStream)
+            .on('error', (error) => {
+              console.error(error);
+            })
+            .on('data', (data) => {
+              console.log(data);
+              const i = rand1k();
+              const currcity = cities[i];
+
+              const store = {
+                name: data.name,
+                street_number: data.street_number,
+                street_number_suffix: data.street_number_suffix,
+                street_name: data.street_name,
+                street_type: data.street_type,
+                street_direction: data.street_direction,
+                address_type: data.address_type,
+                city: {
+                  name: currcity.name,
+                  governing_district: currcity.governing_district,
+                  country: currcity.country,
+                  latitude: currcity.latitude,
+                  longitude: currcity.longitude,
+                  postal_code: currcity.postal_code
+                }
+              };
+              storelist.push(store);
+            })
+            .on('end', (rowCount) => {
+              console.log( `${rowCount} stores parsed.`);
+              console.log(storelist[1]);
+            })
+        })
+
+      /*
+
+      readProducts.pipe(csvStream)
         .on('error', (error) => {
             console.error(error);
           })
         .on('data', (data) => {
           count++;
           const row = { insertOne: data };
-          dataToWrite.push(row);
-          if( dataToWrite.length === 100000 ) {
+          productRows.push(row);
+          if( productRows.length === 100000 ) {
             readProducts.pause();
             console.log('Stream paused, writing rows, at ' + count );
-            products.bulkWrite(dataToWrite)
+            products.bulkWrite(productRows)
             .then((res) => {
               console.log( "Batch of products written" );
-              dataToWrite = [];
+              productRows = [];
               readProducts.resume();
             })
             .catch((err) => {
@@ -78,11 +118,10 @@ const MongoController = {
         })
         .on('end', (rowCount) => {
           console.log(`Parsed ${rowCount} rows`);
-          if( dataToWrite.length > 0 ) {
-            products.bulkWrite(dataToWrite)
+          if( productRows.length > 0 ) {
+            products.bulkWrite(productRows)
             .then((res) => {
               console.log( "Final batch of products written" );
-              dataToWrite = [];
               readProducts.resume();
             })
             .catch((err) => {
@@ -90,6 +129,8 @@ const MongoController = {
             });
           }
         });
+
+        */
 
     });
   }
