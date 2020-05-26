@@ -5,7 +5,8 @@ const db = require('./controllers/mongoctrl.js');
 
 const app = express();
 let client = db.createClient();
-db.connectAndSeed(client);
+
+db.createInventories(client);
 
 var server = app.listen(serverport, function(){
   console.log( `Server running on ${serverport}!!`);

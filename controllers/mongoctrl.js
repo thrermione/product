@@ -17,12 +17,12 @@ const MongoController = {
 
   createClient: function() {
     return new MongoClient(`mongodb://${host}`);
-    const products = db.collection('products');
-    const stores = db.collection('stores');
-    const locations = db.collection('locations');
-    products.drop();
-    stores.drop();
-    locations.drop();
+    // const products = db.collection('products');
+    // const stores = db.collection('stores');
+    // const locations = db.collection('locations');
+    // products.drop();
+    // stores.drop();
+    // locations.drop();
   },
 
   connectAndSeed: function(client) {
@@ -105,6 +105,55 @@ const MongoController = {
       })
   },
 
+  createInventories: function(client) {
+  
+    client.connect(function(err) {
+      if(err) {
+        console.error(err);
+        return;
+      }
+      const db = client.db(database);
+    // We are going to do this 10,000 times because w have 10K stores
+    // So we gotta go through each store in the database.
+
+    // then we get a random selection of let's say somewhere around 1k records
+    // and put that shit in a random uh, store
+    // To update a single field or specific fields just use the $set operator...
+    products = db.collection('products');
+
+    let bulkUpdate = [];
+    let productId = null;
+
+    for( let i = 0; i < 1; i += 1 ){
+      console.log( 'Updating')
+      const stock = [ "bar", "baz", "goop"];
+      //const stock = products.aggregate([{ $sample: {size: 100}  }]).map(function(item){ return item._id });
+      // The issue is with the update object.
+      console.log(stock);
+      //this has to be an operation.
+      const update = { updateOne: { "filter": {"id" : i }, "update": { availability: stock } }};
+      bulkUpdate.push(update);
+    }
+    console.log('Done');
+    console.log(bulkUpdate);
+    products.bulkWrite( bulkUpdate )
+      .then(function(){
+        console.log('Updated')
+      })
+      .catch(function(err){
+        console.error(err);
+      })
+    })
+  },
+
+    // loader.io for stress testing
+    // k6 for local testing
+
+    // do all your API calls separately and write results in as bson into a file
+    // invoke mongoimport and import that bson file into a new empty collection prices_new. 
+    // Javascript, let alone high-level OO wrappers, are just too slow for that
+    // rename prices_new -> prices dropTarget=true (this will be atomic hence no downtime)
+
   createProducts: function(db) {
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
     const productsCsv = csv.createStream();
@@ -137,10 +186,9 @@ const MongoController = {
             products.bulkWrite(productRows)
             .then((res) => {
               console.log( `Products loaded into database.`);
+              MongoController.createInventories(db);
               productsCsv.end();
-              citiesCsv.end();
-              storesCsb.end();
-            })
+             })
             .catch((err) => {
               console.error(err);
             });
