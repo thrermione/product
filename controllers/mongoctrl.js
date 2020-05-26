@@ -31,83 +31,98 @@ const MongoController = {
         console.error(err);
         return;
       }
-
       const db = client.db(database);
-      let readProducts = fs.createReadStream(`${filepath}/products.csv`);
-      let readStores = fs.createReadStream(`${filepath}/stores.csv`);
-      let readCities = fs.createReadStream(`${filepath}/cities.csv`);
-      let csvStream = csv.createStream();
-      let storeStream = csv.createStream();
+      MongoController.loadCities((err, cities) => {
+        if( err ) {
+          console.log(err);
+          return;
+        }
+        MongoController.createStores(db, cities, () => {
+          if(err) {
+            console.log(err);
+            return;
+          }
+          MongoController.createProducts(db);
+        });
+      })
+    });
+  },
 
-      const products = db.collection('products');
-      const stores = db.createCollection('stores');
+  loadCities: function(callback) {
+    const readCities = fs.createReadStream(`${filepath}/cities.csv`);
+    const citiesCsv = csv.createStream();
+    let cities = [];
+    readCities.pipe(citiesCsv)
+      .on('error', (error) => {
+       callback( error, null )
+      })
+      .on('data', (data) => {
+        cities.push(data);
+      })
+      .on('end', (rowCount) => {
+        console.log( `${rowCount} cities parsed.`);
+        if( callback !== undefined ) {
+          callback(null, cities);
+        }
+      });
+  },
 
-      let productRows = [];
-      let count = 0;
+  createStores: function(db, cities, callback) {
+    const readStores = fs.createReadStream(`${filepath}/stores.csv`);
+    const storesCsv = csv.createStream();
+    const stores = db.collection('stores');
+    let storelist = [];
+    readStores.pipe(storesCsv)
+      .on('error', (error) => {
+        callback(error);
+      })
+      .on('data', (data) => {
+        console.log(data);
+        const i = rand1k();
+        const currcity = cities[i];
+        const store = {
+          name: data.name,
+          street_number: data.street_number,
+          street_number_suffix: data.street_number_suffix,
+          street_name: data.street_name,
+          street_type: data.street_type,
+          street_direction: data.street_direction,
+          address_type: data.address_type,
+          city: {
+            name: currcity.name,
+            governing_district: currcity.governing_district,
+            country: currcity.country,
+            latitude: currcity.latitude,
+            longitude: currcity.longitude,
+            postal_code: currcity.postal_code
+          }
+        };
+        storelist.push(store);
+      })
+      .on('end', () => {
+        console.log( `Stores parsed.`);
+        callback(null)
+      })
+  },
 
-      //Let's make 10K stores with their locations.
+  createProducts: function(db) {
+    const readProducts = fs.createReadStream(`${filepath}/products.csv`);
+    const productsCsv = csv.createStream();
+    const products = db.collection('products');
+    let productRows = [];
 
-      let cities = [];
-      let storelist = [];
-      readCities.pipe(csvStream)
-        .on('error', (error) => {
-          console.error(error);
-        })
-        .on('data', (data) => {
-          cities.push(data);
-        })
-        .on('end', (rowCount) => {
-          console.log( `${rowCount} cities parsed. Loading stores.`);
-          readStores.pipe(storeStream)
-            .on('error', (error) => {
-              console.error(error);
-            })
-            .on('data', (data) => {
-              console.log(data);
-              const i = rand1k();
-              const currcity = cities[i];
-
-              const store = {
-                name: data.name,
-                street_number: data.street_number,
-                street_number_suffix: data.street_number_suffix,
-                street_name: data.street_name,
-                street_type: data.street_type,
-                street_direction: data.street_direction,
-                address_type: data.address_type,
-                city: {
-                  name: currcity.name,
-                  governing_district: currcity.governing_district,
-                  country: currcity.country,
-                  latitude: currcity.latitude,
-                  longitude: currcity.longitude,
-                  postal_code: currcity.postal_code
-                }
-              };
-              storelist.push(store);
-            })
-            .on('end', (rowCount) => {
-              console.log( `${rowCount} stores parsed.`);
-              console.log(storelist[1]);
-            })
-        })
-
-      /*
-
-      readProducts.pipe(csvStream)
+    readProducts.pipe(productsCsv)
         .on('error', (error) => {
             console.error(error);
           })
         .on('data', (data) => {
-          count++;
           const row = { insertOne: data };
           productRows.push(row);
           if( productRows.length === 100000 ) {
             readProducts.pause();
-            console.log('Stream paused, writing rows, at ' + count );
+            console.log('Bulkwriting');
             products.bulkWrite(productRows)
             .then((res) => {
-              console.log( "Batch of products written" );
               productRows = [];
               readProducts.resume();
             })
@@ -117,22 +132,20 @@ const MongoController = {
           }
         })
         .on('end', (rowCount) => {
-          console.log(`Parsed ${rowCount} rows`);
+          console.log(`Products parsed.`);
           if( productRows.length > 0 ) {
             products.bulkWrite(productRows)
             .then((res) => {
-              console.log( "Final batch of products written" );
-              readProducts.resume();
+              console.log( `Products loaded into database.`);
+              productsCsv.end();
+              citiesCsv.end();
+              storesCsb.end();
             })
             .catch((err) => {
               console.error(err);
             });
           }
         });
-
-        */
-
-    });
   }
 }
 
