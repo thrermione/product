@@ -128,7 +128,6 @@ const MongoController = {
     let myproducts = [];
 
 //      var stock = null;
-
       products.aggregate(
         [{ $sample: {size: 1000}  }]
         ,
@@ -140,6 +139,15 @@ const MongoController = {
           .on('end', () => {
             console.log('End');
             console.log(myproducts);
+            console.log( `Let's update store 1 with this product list.`);
+            products.updateOne({id: 1} , { $set: {stock: myproducts }})
+              .then(() => {
+                console.log("i done did it");
+                //this takes way too long
+              })
+              .catch((err) => {
+                console.error(err);
+              })
           })
         }
         );
