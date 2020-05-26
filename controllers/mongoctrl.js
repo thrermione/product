@@ -120,32 +120,43 @@ const MongoController = {
     // and put that shit in a random uh, store
     // To update a single field or specific fields just use the $set operator...
     products = db.collection('products');
+    stores = db.collection('stores');
+
 
     let bulkUpdate = [];
     let productId = null;
+    let myproducts = [];
 
-    for( let i = 0; i < 1; i += 1 ){
-      console.log( 'Updating')
-      const stock = [ "bar", "baz", "goop"];
-      //const stock = products.aggregate([{ $sample: {size: 100}  }]).map(function(item){ return item._id });
-      // The issue is with the update object.
-      console.log(stock);
+//      var stock = null;
+
+      products.aggregate(
+        [{ $sample: {size: 1000}  }]
+        ,
+        (err, cursor) => {
+          cursor
+          .on('data', (data) => {
+            myproducts.push({id: data._id});
+          })
+          .on('end', () => {
+            console.log('End');
+            console.log(myproducts);
+          })
+        }
+        );
       //this has to be an operation.
-      const update = { updateOne: { "filter": {"id" : i }, "update": { availability: stock } }};
-      bulkUpdate.push(update);
-    }
-    console.log('Done');
-    console.log(bulkUpdate);
-    products.bulkWrite( bulkUpdate )
-      .then(function(){
-        console.log('Updated')
-      })
-      .catch(function(err){
-        console.error(err);
-      })
+ //     const update = { updateOne: { "filter": {"id" : i }, "update": { availability: stock } }};
+  //    bulkUpdate.push(update);
+//    products.bulkWrite( bulkUpdate )
+//      .then(function(){
+//        console.log('Updated')
+//      })
+//      .catch(function(err){
+//        console.error(err);
+//      })
     })
   },
 
+  
     // loader.io for stress testing
     // k6 for local testing
 
