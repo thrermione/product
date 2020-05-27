@@ -99,84 +99,6 @@ const MongoController = {
       })
   },
 
-  createInventories: function(client) {
-
-    client.connect(function(err) {
-      if(err) {
-        console.error(err);
-        return;
-      }
-      const db = client.db(database);
-      console.log('Connection established');
-    products = db.collection('products');
-    stores = db.collection('stores');
-
-       // ****************
-      var cursor = stores.find();
-      console.log(cursor);
-      while (cursor.hasNext()){
-       // console.log('Next'); <== this iS running.
-        // so let's just load one thing 
-        // tis approach causes a heap error.
-        products.aggregate(
-          [{$sample: {size:1000}}]
-          ,
-          (err, agg) => {
-            agg
-            .on('data', (data) => {
-              console.log('Data');
-              var thisdoc = cursor.next();
-              var availability = {
-                product_id: data._id,
-                number_in_stock: rand1k()
-              }
-              var newdoc = Object.assign(availability, thisdoc);
-              stores.update({_id: thisdoc['_id']}, newdoc )
-            })
-          }
-        )
-      }
-      // ****************
-    });
-
-
-   
-    // stores.find().forEach( function(store){
-    //   //Get 1K stores.
-    //   products.aggregate(
-    //     [{ $sample: {size: 1000}  }]
-    //     ,
-    //     (err, cursor) => {
-    //       cursor
-    //       .on('data', (data) => {
-    //         myproducts.push({ 
-    //           product_id: data._id,
-    //           number_in_stock: rand1k(),
-    //         });
-    //       })
-    //       .on('end', () => {
-    //         //Add that 1k stores to the thing.
-    //         products.update(
-    //           {_id: store._id }, 
-    //           { $set: {stock: myproducts }
-    //         })
-    //           .then(() => {
-    //             console.log("i done did it");
-    //             products.findOne({sku: "1580255383"})
-    //               .then((product) => {
-    //                 console.log(product);
-    //               })
-    //           })
-    //           .catch((err) => {
-    //             console.error(err);
-    //           })
-    //       })
-    //     }
-    //     );
-
-    // })
-  },
-
   createProducts: function(db) {
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
     const productsCsv = csv.createStream();
@@ -189,6 +111,8 @@ const MongoController = {
             console.error(error);
           })
         .on('data', (data) => {
+
+          // i could associate the stores here? 
           const product = data;
           const row = { insertOne: data };
           productRows.push(row);
