@@ -1,10 +1,8 @@
 const path = require('path');
-// load whatever we need to connect with
-// load whatever we need as a schema file 
 const { MongoClient } = require('mongodb');
 const fs = require('fs');
 const csv = require('csv-stream');
-const { rand1k } = require('../lib/randomluts.js');
+const { rand10k, rand1k } = require('../lib/randomluts.js');
 
 const port = process.env.MONGOPORT || 27017;
 const user = process.env.DBUSER || 'productservice';
@@ -18,6 +16,14 @@ const MongoController = {
   createClient: function() {
     return new MongoClient(`mongodb://${host}`);
   },
+
+  // take the inventory out of the stors and put it in the product. 
+  // the product tells you waht stores its available in. 
+
+  // key in it that is like "avaiable_at"
+  // the value of available_at is an array
+  // the objects in that array are the object ids or some other means of ref. ideally objids of the particular stores, 
+  // and also probalby the # in stock
 
   connectAndSeed: function(client) {
     client.connect(function(err) {
@@ -75,29 +81,35 @@ const MongoController = {
         const i = rand1k();
         const currcity = cities[i];
         const store = {
-          name: data.name,
-          street_number: data.street_number,
-          street_number_suffix: data.street_number_suffix,
-          street_name: data.street_name,
-          street_type: data.street_type,
-          street_direction: data.street_direction,
-          address_type: data.address_type,
-          city: {
-            name: currcity.name,
-            governing_district: currcity.governing_district,
-            country: currcity.country,
-            latitude: currcity.latitude,
-            longitude: currcity.longitude,
-            postal_code: currcity.postal_code
+          insertOne: {
+            name: data.name,
+            street_number: data.street_number,
+            street_number_suffix: data.street_number_suffix,
+            street_name: data.street_name,
+            street_type: data.street_type,
+            street_direction: data.street_direction,
+            address_type: data.address_type,
+            city: {
+              name: currcity.name,
+              governing_district: currcity.governing_district,
+              country: currcity.country,
+              latitude: currcity.latitude,
+              longitude: currcity.longitude,
+              postal_code: currcity.postal_code
+            }
           }
         };
         storelist.push(store);
       })
       .on('end', () => {
         console.log( `Stores parsed.`);
-        callback(null)
+        stores.bulkWrite(storelist)
+        .then(function() {
+          callback(null);
+        })
       })
   },
+
 
   createProducts: function(db) {
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
@@ -110,12 +122,27 @@ const MongoController = {
         .on('error', (error) => {
             console.error(error);
           })
-        .on('data', (data) => {
+        .on('data', (data) => { 
 
+          //per line of csv 
           // i could associate the stores here? 
-          const product = data;
+          // I need 1K places this is available. 
+          // let availability = [];
+          // for( let i = 0; i < 1000; i++ ) {
+          //   let storeId = rand10k();
+          //   let inStock = rand1k();
+          //   let stock = {
+          //     store_id: storeId,
+          //     number_in_stock: inStock,
+          //   }
+          //   availability.push(stock);
+          // }
+
+         // const product = Object.assign( availability, data);
           const row = { insertOne: data };
+
           productRows.push(row);
+
           if( productRows.length === 100000 ) {
             readProducts.pause();
             console.log('Bulkwriting');
@@ -135,7 +162,6 @@ const MongoController = {
             products.bulkWrite(productRows)
             .then((res) => {
               console.log( `Products loaded into database.`);
-              MongoController.createInventories(db);
             })
             .catch((err) => {
               console.error(err);
