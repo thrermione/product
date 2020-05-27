@@ -17,12 +17,6 @@ const MongoController = {
 
   createClient: function() {
     return new MongoClient(`mongodb://${host}`);
-    // const products = db.collection('products');
-    // const stores = db.collection('stores');
-    // const locations = db.collection('locations');
-    // products.drop();
-    // stores.drop();
-    // locations.drop();
   },
 
   connectAndSeed: function(client) {
@@ -106,77 +100,88 @@ const MongoController = {
   },
 
   createInventories: function(client) {
-  
+
     client.connect(function(err) {
       if(err) {
         console.error(err);
         return;
       }
       const db = client.db(database);
-    // We are going to do this 10,000 times because w have 10K stores
-    // So we gotta go through each store in the database.
-
-    // then we get a random selection of let's say somewhere around 1k records
-    // and put that shit in a random uh, store
-    // To update a single field or specific fields just use the $set operator...
+      console.log('Connection established');
     products = db.collection('products');
     stores = db.collection('stores');
 
+       // ****************
+      var cursor = stores.find();
+      console.log(cursor);
+      while (cursor.hasNext()){
+       // console.log('Next'); <== this iS running.
+        // so let's just load one thing 
+        // tis approach causes a heap error.
+        products.aggregate(
+          [{$sample: {size:1000}}]
+          ,
+          (err, agg) => {
+            agg
+            .on('data', (data) => {
+              console.log('Data');
+              var thisdoc = cursor.next();
+              var availability = {
+                product_id: data._id,
+                number_in_stock: rand1k()
+              }
+              var newdoc = Object.assign(availability, thisdoc);
+              stores.update({_id: thisdoc['_id']}, newdoc )
+            })
+          }
+        )
+      }
+      // ****************
+    });
 
-    let bulkUpdate = [];
-    let productId = null;
-    let myproducts = [];
 
-//      var stock = null;
-      products.aggregate(
-        [{ $sample: {size: 1000}  }]
-        ,
-        (err, cursor) => {
-          cursor
-          .on('data', (data) => {
-            myproducts.push({id: data._id});
-          })
-          .on('end', () => {
-            console.log('End');
-            console.log(myproducts);
-            console.log( `Let's update store 1 with this product list.`);
-            products.updateOne({id: 1} , { $set: {stock: myproducts }})
-              .then(() => {
-                console.log("i done did it");
-                //this takes way too long
-              })
-              .catch((err) => {
-                console.error(err);
-              })
-          })
-        }
-        );
-      //this has to be an operation.
- //     const update = { updateOne: { "filter": {"id" : i }, "update": { availability: stock } }};
-  //    bulkUpdate.push(update);
-//    products.bulkWrite( bulkUpdate )
-//      .then(function(){
-//        console.log('Updated')
-//      })
-//      .catch(function(err){
-//        console.error(err);
-//      })
-    })
+   
+    // stores.find().forEach( function(store){
+    //   //Get 1K stores.
+    //   products.aggregate(
+    //     [{ $sample: {size: 1000}  }]
+    //     ,
+    //     (err, cursor) => {
+    //       cursor
+    //       .on('data', (data) => {
+    //         myproducts.push({ 
+    //           product_id: data._id,
+    //           number_in_stock: rand1k(),
+    //         });
+    //       })
+    //       .on('end', () => {
+    //         //Add that 1k stores to the thing.
+    //         products.update(
+    //           {_id: store._id }, 
+    //           { $set: {stock: myproducts }
+    //         })
+    //           .then(() => {
+    //             console.log("i done did it");
+    //             products.findOne({sku: "1580255383"})
+    //               .then((product) => {
+    //                 console.log(product);
+    //               })
+    //           })
+    //           .catch((err) => {
+    //             console.error(err);
+    //           })
+    //       })
+    //     }
+    //     );
+
+    // })
   },
-
-  
-    // loader.io for stress testing
-    // k6 for local testing
-
-    // do all your API calls separately and write results in as bson into a file
-    // invoke mongoimport and import that bson file into a new empty collection prices_new. 
-    // Javascript, let alone high-level OO wrappers, are just too slow for that
-    // rename prices_new -> prices dropTarget=true (this will be atomic hence no downtime)
 
   createProducts: function(db) {
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
     const productsCsv = csv.createStream();
     const products = db.collection('products');
+    products.createIndex({ sku: 1 });
     let productRows = [];
 
     readProducts.pipe(productsCsv)
@@ -184,6 +189,7 @@ const MongoController = {
             console.error(error);
           })
         .on('data', (data) => {
+          const product = data;
           const row = { insertOne: data };
           productRows.push(row);
           if( productRows.length === 100000 ) {
@@ -206,8 +212,7 @@ const MongoController = {
             .then((res) => {
               console.log( `Products loaded into database.`);
               MongoController.createInventories(db);
-              productsCsv.end();
-             })
+            })
             .catch((err) => {
               console.error(err);
             });

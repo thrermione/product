@@ -5,7 +5,6 @@ const db = require('./controllers/mongoctrl.js');
 
 const app = express();
 let client = db.createClient();
-
 db.createInventories(client);
 
 var server = app.listen(serverport, function(){
