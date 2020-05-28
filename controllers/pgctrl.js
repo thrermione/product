@@ -50,6 +50,11 @@ const PGController = {
           sql = `SELECT id FROM products`;
 
           var query = new QueryStream(sql);
+          // this won't avoid memory leak problems bc you can still load just
+          // tons and tons of rows into your application
+
+          // you must ensure proper transactional behaviour while processing the results in single row mode.
+          
 
           var stream = client.query(query);
 
@@ -64,42 +69,18 @@ const PGController = {
             }
             values += `(${data.id}, ${rand1k()})`;
 
-            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values}`;
+            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
             stream.pause();
-            console.log('wargarbl');
+            console.log(assoc);
             client.query(assoc)
             .then(()=>{
-              stream.resume();
+              console.log('This was a promise');
             })
           })
-
-          // const map = new Map(product => [product.id]);
-
-          // products.pipe(map).pipe(what);
-          // products.on('error', e => what.emit('error',e));
-          // map.on('error', e => what.emit('error',e));
-          // console.log(what);
-        //   const makeInventory = function( product ) {
-        //     let query = 'INSERT INTO products_stores (product_id, store_id, reserved, quantity ) VALUES '; 
-        //     for (let i = 0; i < 10; i++ ) {
-        //       query += `(${product}, ${rand1k()}, 0, 10),`;
-        //     }
-        //     query += ';'
-        //     return query;
-        //   }
-        //   for( let i = 0; i < 10000000; i++ ) {
-        //     client.query(makeInventory(i));
-        //   }
-        //   console.log('Done with associations');
-        // })
-        // .catch((err)=>{
-        //   console.error(err);
-        // })
-        //})
         })
       })
     })
   }
-};
+}
 
 module.exports = PGController; 
