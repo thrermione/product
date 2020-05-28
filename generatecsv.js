@@ -1,6 +1,9 @@
+console.log(`Writing CSVs at ${Date.now()}`);
 const fs = require('fs');
 const csv = require('csv-write-stream'); 
 const faker = require('faker');
+const path = require('path');
+const filepath = path.join(__dirname, '..' , 'lib', 'csv');
 
 const start = process.hrtime();
 
@@ -63,9 +66,22 @@ const addressType = function() {
   return null;  
 }
 
+console.log(`Writing inventories at ${Date.now()}`);
+const inventories = csv();
+inventories.pipe(fs.createWriteStream(`${filepath}/inventories.csv`));
+for( var i = 1; i < 10000000; i += 1 ) {
+  inventories.write({
+    store_id: rand1k(),
+    sku: 1580255382 + i,
+    quantity: rand1k(),
+    reserved: 0
+  });
+}
+inventories.end();
+
 const products = csv();
-products.pipe(fs.createWriteStream('csvs/products.csv'));
-// spinal tap to 10M later
+products.pipe(fs.createWriteStream(`${filepath}/products.csv`));
+
 for( var i = 1; i < 10000000; i+= 1 ) {
   products.write({
     id: i,
@@ -77,9 +93,10 @@ for( var i = 1; i < 10000000; i+= 1 ) {
   });
 }
 products.end();
+console.log(`Products complete ${Date.now()}`);
 
 const stores = csv();
-stores.pipe(fs.createWriteStream('csvs/stores.csv'));
+stores.pipe(fs.createWriteStream(`${filepath}/stores.csv`));
 for( var j = 1; j < 10001; j+= 1 ) {
   stores.write({
     id: j,
@@ -96,7 +113,7 @@ for( var j = 1; j < 10001; j+= 1 ) {
 stores.end();
 
 const cities = csv();
-cities.pipe(fs.createWriteStream('csvs/cities.csv'));
+cities.pipe(fs.createWriteStream(`${filepath}/cities.csv`));
 for( var k = 1; k < 1001; k+=1 ) {
   cities.write({
     id: k,

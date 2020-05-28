@@ -108,73 +108,73 @@ const MongoController = {
           callback(null);
         })
       })
-  }, 
-
-  createInventories: function(db) {
-    //create an inventories collection
-    // we have 10k stores so 10k inventories.
-
-    const generateInventory = function(size) {
-      let inventory = [];
-      for( let i = 0; i < size; i++ ) {
-        const stock = {
-          sku: rand10m(),
-          quantity: rand1k()
-        }
-        inventory.push(stock);
-      }
-      return inventory;
-    }
-
-    for( let i = 0; i < 1000; i += 1 ) {
-      const store = i,
-      // then products
-    }
-
-    const nextStore = {
-      storeId: i,
-      products: []
-    }
-    nextStore.products.
-    //location
-    //producs
-  }
-
-
+  },
 
   createProducts: function(db) {
+    console.log( Date.now() );
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
     const productsCsv = csv.createStream();
     const products = db.collection('products');
+    const inventories = db.collection('inventory');
+   
     products.createIndex({ sku: 1 });
+    inventories.createIndex({product_sku: 1});
+    inventories.createIndex({store_id: 1});
+
     let productRows = [];
+    let inventory = [];
+
     readProducts.pipe(productsCsv)
-        .on('error', (error) => {
-            console.error(error);
-          })
-        .on('data', (data) => {
-          const product = Object.assign( availability, data);
-          const row = { insertOne: product };
-          productRows.push(row);
-          if( productRows.length === 100000 ) {
-            readProducts.pause();
-            console.log('Bulkwriting');
+      .on('error', (error) => {
+          console.error(error);
+        })
+      .on('data', (data) => {
+        const row = { insertOne: data };
+
+        const stock = {
+          insertOne: {
+            store_id: rand10k(),
+            product_sku: data.sku, 
+            quantity: rand1k(),
+            reserved: 0
+          }
+        };
+
+        inventory.push(stock);
+        productRows.push(row);
+
+        if( productRows.length === 100000 ) {
+          readProducts.pause();
+          console.log('Bulkwriting');
+          inventories.bulkWrite(inventory)
+          .then(()=>{
             products.bulkWrite(productRows)
             .then((res) => {
               productRows = [];
+              inventory = [];
               readProducts.resume();
             })
             .catch((err) => {
               console.error(err);
-            });
-          }
+            })
+          })
+          .catch((err) => {
+            console.error(err);
+          });  
+        }
+
         })
         .on('end', (rowCount) => {
           console.log(`Products parsed.`);
           if( productRows.length > 0 ) {
+            inventories.bulkWrite(inventory)
+            .catch((err)=>{
+              console.log("error")
+            });
+
             products.bulkWrite(productRows)
             .then((res) => {
-              console.log( `Products loaded into database.`);
+              console.log( `Products loaded into database by ${Date.now()}`);
             })
             .catch((err) => {
               console.error(err);
