@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const { Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
 const { rand1k } = require('../lib/randomluts.js');
@@ -48,8 +49,9 @@ const PGController = {
         .then(()=>{
           console.log('Data loaded.')
 
+
+
           const makeInventory = function(id){
-            console.log("Running on" + id );
             let values = '';
             for( let i = 0; i < 15; i += 1 ) {
               values += `(${id}, ${rand1k()}),`;
@@ -58,13 +60,13 @@ const PGController = {
             let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
             client.query(assoc)
             .then(() => {
-              console.log('Finito')
+              console.log('Inserted ' + id )
             })
           }
 
           async function streamInventory(stream) {
             for await ( const row of stream ) {
-              makeInventory(row.id);
+              makeInventory(row[0]);
             }
           }
 
@@ -73,11 +75,12 @@ const PGController = {
           // this won't avoid memory leak problems bc you can still load just
           // tons and tons of rows into your application
           // lt's just idk open up that CSV.
-          var stream = client.query(query);
+          var stream = fs.createReadStream(`${filepath}/products.csv`);
           streamInventory(stream);
 
-          // stream.on('data', (data)=>{
-          // });
+          stream.on('end', (data)=>{
+            console.log('AAAAAAAAHHHHH!!!!!!');
+          });
         })
       })
     })
