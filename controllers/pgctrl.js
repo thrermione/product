@@ -2,7 +2,7 @@ const path = require('path');
 const { Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
 const { rand1k } = require('../lib/randomluts.js');
-
+const QueryStream = require('pg-query-stream');
 const port = process.env.PGPORT || 5432;
 const user = process.env.DBUSER || 'productservice';
 const password = process.env.PASSWORD || 'cocacola';
@@ -47,6 +47,26 @@ const PGController = {
         .then(()=>{
           console.log('Data loaded.')
 
+          sql = `SELECT id FROM products`;
+
+          var query = new QueryStream(sql);
+
+          var stream = client.query(query);
+
+          stream.on('end', function(){
+            console.log('Done');
+          })
+
+          stream.on('data', function(data){
+            console.log(data);
+          })
+
+          // const map = new Map(product => [product.id]);
+
+          // products.pipe(map).pipe(what);
+          // products.on('error', e => what.emit('error',e));
+          // map.on('error', e => what.emit('error',e));
+          // console.log(what);
         //   const makeInventory = function( product ) {
         //     let query = 'INSERT INTO products_stores (product_id, store_id, reserved, quantity ) VALUES '; 
         //     for (let i = 0; i < 10; i++ ) {
@@ -63,7 +83,9 @@ const PGController = {
         // .catch((err)=>{
         //   console.error(err);
         // })
-    })
+        //})
+        })
+      })
     })
   }
 };
