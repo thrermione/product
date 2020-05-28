@@ -47,7 +47,11 @@ const PGController = {
           `
         )
         .then(()=>{
-          console.log('Data loaded.')
+
+          console.log('Primary data loaded.')
+
+          let csvStream = csv.createStream();
+
           var count = 0;
           var queue = []
           let supercounter = 0; 
@@ -75,37 +79,31 @@ const PGController = {
           }
 
           var stream = fs.createReadStream(`${filepath}/products.csv`);
-          streamInventory(stream);
-
-          stream.on('end', (data)=>{
-            console.log('AAAAAAAAHHHHH!!!!!!');
-
-          });
-
-          stream.on('data', (data) => {
-            console.log(data);
-            stream.pause();
-            prepareInventoryForWrite(data[0]);
-            if( count >= 1000 ) {
-              stream.pause()
-              bulkWrite(queue, (err) => {
-                if(err) {
-                  console.log(err);
-                  return;
-                }
-                console.log('Bulkwrote');
-                count = 0; 
-                stream.resume();
+          stream.pipe(csvStream)
+            .on('end', (data)=>{
+              console.log('AAAAAAAAHHHHH!!!!!!');
               })
-            } 
+            .on('data', (data) => {
+              count++;
+              console.log(data);
+              console.log('chunk');
+              prepareInventoryForWrite(data.id);
+              if( count >= 1000 ) {
+                stream.pause()
+                bulkWrite(queue, (err) => {
+                  if(err) {
+                    console.log(err);
+                    return;
+                  }
+                  console.log('Bulkwrote');
+                  count = 0; 
+                  stream.resume();
+                })
+              } 
           })
 
 
-          async function streamInventory(stream) {
-            for await ( const row of stream ) {
-              prepareInventoryForWrite(row[0]);
-            }
-          }
+       
           
         })
       })
