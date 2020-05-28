@@ -58,7 +58,19 @@ const PGController = {
           })
 
           stream.on('data', function(data){
-            console.log(data);
+            let values = '';
+            for( let i = 0; i < 9; i += 1 ) {
+              values += `(${data.id}, ${rand1k()}),`;
+            }
+            values += `(${data.id}, ${rand1k()})`;
+
+            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values}`;
+            stream.pause();
+            console.log('wargarbl');
+            client.query(assoc)
+            .then(()=>{
+              stream.resume();
+            })
           })
 
           // const map = new Map(product => [product.id]);

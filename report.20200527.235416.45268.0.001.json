@@ -4,17 +4,14 @@
     "reportVersion": 1,
     "event": "Allocation failed - JavaScript heap out of memory",
     "trigger": "FatalError",
-    "filename": "report.20200526.182520.21919.0.001.json",
-    "dumpEventTime": "2020-05-26T18:25:20Z",
-    "dumpEventTimeStamp": "1590542720333",
-    "processId": 21919,
+    "filename": "report.20200527.235416.45268.0.001.json",
+    "dumpEventTime": "2020-05-27T23:54:16Z",
+    "dumpEventTimeStamp": "1590648856882",
+    "processId": 45268,
     "cwd": "/Users/marissa/src/SDC",
     "commandLine": [
       "node",
-      "app.js",
-      "--max-old-space-size",
-      "=",
-      "8196"
+      "app.js"
     ],
     "nodejsVersion": "v12.16.1",
     "wordSize": 64,
@@ -52,73 +49,73 @@
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 37035840,
+        "user": 53629560,
         "nice": 0,
-        "sys": 25337510,
-        "idle": 157028000,
+        "sys": 34959140,
+        "idle": 206211420,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 4561720,
+        "user": 6492100,
         "nice": 0,
-        "sys": 3519410,
-        "idle": 211314080,
+        "sys": 5043460,
+        "idle": 283257090,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 30202650,
+        "user": 43086620,
         "nice": 0,
-        "sys": 22000530,
-        "idle": 167194360,
+        "sys": 30085760,
+        "idle": 221623160,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 4360920,
+        "user": 6228990,
         "nice": 0,
-        "sys": 2505160,
-        "idle": 212528740,
+        "sys": 3661040,
+        "idle": 284902150,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 26975910,
+        "user": 39042340,
         "nice": 0,
-        "sys": 17144580,
-        "idle": 175276030,
+        "sys": 23719210,
+        "idle": 232032730,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 4329550,
+        "user": 6179320,
         "nice": 0,
-        "sys": 2127150,
-        "idle": 212937740,
+        "sys": 3156810,
+        "idle": 285455570,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 23018870,
+        "user": 34652650,
         "nice": 0,
-        "sys": 11745790,
-        "idle": 184630970,
+        "sys": 16621950,
+        "idle": 243518570,
         "irq": 0
       },
       {
         "model": "Intel(R) Core(TM) i7-4870HQ CPU @ 2.50GHz",
         "speed": 2500,
-        "user": 4340060,
+        "user": 6230720,
         "nice": 0,
-        "sys": 1887190,
-        "idle": 213166800,
+        "sys": 2830850,
+        "idle": 285729650,
         "irq": 0
       }
     ],
@@ -203,6 +200,15 @@
         "scopeid": 0
       },
       {
+        "name": "en0",
+        "internal": false,
+        "mac": "a4:5e:60:e9:c2:75",
+        "address": "2604:5500:c2c4:f400:d456:d74c:43f5:232",
+        "netmask": "ffff:ffff:ffff:ffff::",
+        "family": "IPv6",
+        "scopeid": 0
+      },
+      {
         "name": "awdl0",
         "internal": false,
         "mac": "1e:6d:05:24:db:30",
@@ -219,6 +225,14 @@
         "netmask": "ffff:ffff:ffff:ffff::",
         "family": "IPv6",
         "scopeid": 11
+      },
+      {
+        "name": "utun1",
+        "internal": false,
+        "mac": "00:00:00:00:00:00",
+        "address": "172.16.128.46",
+        "netmask": "255.255.255.255",
+        "family": "IPv4"
       }
     ],
     "host": "Marissa.local"
@@ -275,43 +289,19 @@
       "symbol": "v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationType, v8::internal::AllocationOrigin) [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
     },
     {
-      "pc": "0x0000000100618718",
-      "symbol": "v8::internal::Runtime_AllocateInYoungGeneration(int, unsigned long*, v8::internal::Isolate*) [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
+      "pc": "0x0000000100618b80",
+      "symbol": "v8::internal::Runtime_AllocateInOldGeneration(int, unsigned long*, v8::internal::Isolate*) [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
     },
     {
       "pc": "0x0000000100950919",
       "symbol": "Builtins_CEntry_Return1_DontSaveFPRegs_ArgvOnStack_NoBuiltinExit [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
-    },
-    {
-      "pc": "0x00001249477c7527",
-      "symbol": ""
-    },
-    {
-      "pc": "0x00000001008cf91c",
-      "symbol": "Builtins_ArgumentsAdaptorTrampoline [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
-    },
-    {
-      "pc": "0x00000001008d62c4",
-      "symbol": "Builtins_InterpreterEntryTrampoline [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
-    },
-    {
-      "pc": "0x00000001008d62c4",
-      "symbol": "Builtins_InterpreterEntryTrampoline [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
-    },
-    {
-      "pc": "0x00000001008cf91c",
-      "symbol": "Builtins_ArgumentsAdaptorTrampoline [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
-    },
-    {
-      "pc": "0x00000001008d62c4",
-      "symbol": "Builtins_InterpreterEntryTrampoline [/Users/marissa/.nvm/versions/node/v12.16.1/bin/node]"
     }
   ],
   "javascriptHeap": {
-    "totalMemory": 2176688128,
-    "totalCommittedMemory": 2166646056,
-    "usedMemory": 2132545080,
-    "availableMemory": 43676816,
+    "totalMemory": 2176516096,
+    "totalCommittedMemory": 2160204048,
+    "usedMemory": 2139002448,
+    "availableMemory": 55330040,
     "memoryLimit": 2197815296,
     "heapSpaces": {
       "read_only_space": {
@@ -322,38 +312,38 @@
         "available": 0
       },
       "new_space": {
-        "memorySize": 13631488,
-        "committedMemory": 4152160,
-        "capacity": 6808464,
-        "used": 1058824,
-        "available": 5749640
+        "memorySize": 20447232,
+        "committedMemory": 4850464,
+        "capacity": 10212696,
+        "used": 173024,
+        "available": 10039672
       },
       "old_space": {
-        "memorySize": 2151563264,
-        "committedMemory": 2151265440,
-        "capacity": 2130481752,
-        "used": 2120490208,
-        "available": 9991544
+        "memorySize": 2142650368,
+        "committedMemory": 2142473408,
+        "capacity": 2140053800,
+        "used": 2126275328,
+        "available": 13778472
       },
       "code_space": {
         "memorySize": 430080,
-        "committedMemory": 397920,
-        "capacity": 328192,
-        "used": 328192,
+        "committedMemory": 364544,
+        "capacity": 314240,
+        "used": 314240,
         "available": 0
       },
       "map_space": {
-        "memorySize": 528384,
-        "committedMemory": 524680,
-        "capacity": 449440,
-        "used": 449440,
+        "memorySize": 790528,
+        "committedMemory": 546800,
+        "capacity": 330480,
+        "used": 330480,
         "available": 0
       },
       "large_object_space": {
-        "memorySize": 10223616,
-        "committedMemory": 10223616,
-        "capacity": 10182824,
-        "used": 10182824,
+        "memorySize": 11886592,
+        "committedMemory": 11886592,
+        "capacity": 11873784,
+        "used": 11873784,
         "available": 0
       },
       "code_large_object_space": {
@@ -366,20 +356,20 @@
       "new_large_object_space": {
         "memorySize": 0,
         "committedMemory": 0,
-        "capacity": 6808464,
+        "capacity": 10212696,
         "used": 0,
-        "available": 6808464
+        "available": 10212696
       }
     }
   },
   "resourceUsage": {
-    "userCpuSeconds": 68.5676,
-    "kernelCpuSeconds": 4.15864,
-    "cpuConsumptionPercent": 186.477,
-    "maxRss": 2476098977792,
+    "userCpuSeconds": 48.7049,
+    "kernelCpuSeconds": 2.76783,
+    "cpuConsumptionPercent": 76.8249,
+    "maxRss": 2311023755264,
     "pageFaults": {
       "IORequired": 2,
-      "IONotRequired": 659172
+      "IONotRequired": 640538
     },
     "fsActivity": {
       "reads": 0,
