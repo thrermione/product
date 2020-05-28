@@ -1,5 +1,5 @@
 const path = require('path');
-const {Client } = require('pg');
+const { Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
 
 const port = process.env.PGPORT || 5432;
@@ -26,15 +26,31 @@ const PGController = {
     .then(() => {
       console.log( `Postgres connection established on port ${port}.`);
       client.query(loadSchema)
-      .then((response) => {
+      .then(() => {
         console.log( 'Schema successfully loaded!!');
         client.query(`
           COPY products
           FROM '${filepath}/products.csv'
           WITH (format csv, header)
         `)
-        .then((res)=>{
-          console.log(`CSVs successfully copied into the database.`)
+        .then(()=>{
+          console.log(`Products successfully copied into the database.`);
+          client.query(`
+            COPY locations
+            FROM ${filepath}/locations.csv
+            WITH (format csv, header)`
+          )
+          .then(()=>{
+            console.log('locations successfully copied');
+            client.query(`
+              COPY cities
+              FROM ${filepath/cities.csv}
+              WITH (format csv, header)`
+            )
+            .then(()=>{
+
+            })
+          }
         })
         .catch((err)=>{
           console.error(`Error writing data into Postgres: ${err}`);
