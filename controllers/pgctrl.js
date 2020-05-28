@@ -47,36 +47,33 @@ const PGController = {
         .then(()=>{
           console.log('Data loaded.')
 
-          sql = `SELECT id FROM products`;
+          const makeInventory = function(id){
+            console.log("Running on" + id );
+            let values = '';
+            for( let i = 0; i < 15; i += 1 ) {
+              values += `(${id}, ${rand1k()}),`;
+            }
+            values += `(${id}, ${rand1k()})`;
+            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
+            client.query(assoc)
+            .then(() => {
+              console.log('Finito')
+            })
+          }
 
+          async function streamInventory(stream) {
+            for await ( const row of stream ) {
+              makeInventory(row.id);
+            }
+          }
+
+          sql = `SELECT id FROM products`;
           var query = new QueryStream(sql);
           // this won't avoid memory leak problems bc you can still load just
           // tons and tons of rows into your application
-
-          // you must ensure proper transactional behaviour while processing the results in single row mode.
-          
-
           var stream = client.query(query);
-
-          stream.on('end', function(){
-            console.log('Done');
-          })
-
-          stream.on('data', function(data){
-            let values = '';
-            for( let i = 0; i < 9; i += 1 ) {
-              values += `(${data.id}, ${rand1k()}),`;
-            }
-            values += `(${data.id}, ${rand1k()})`;
-
-            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
-            stream.pause();
-            console.log(assoc);
-            client.query(assoc)
-            .then(()=>{
-              console.log('This was a promise');
-            })
-          })
+          streamInventory(stream);
+        
         })
       })
     })
