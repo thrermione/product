@@ -1,6 +1,7 @@
 const path = require('path');
 const { Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
+const { rand1k } = require('../lib/randomluts.js');
 
 const port = process.env.PGPORT || 5432;
 const user = process.env.DBUSER || 'productservice';
@@ -27,7 +28,7 @@ const PGController = {
       console.log( `Postgres connection established on port ${port}.`);
       client.query(loadSchema)
       .then(() => {
-        console.log( 'Schema successfully loaded!!');
+        console.log( 'Schema successfully loaded.');
         client.query(
 
           `COPY products
@@ -45,10 +46,23 @@ const PGController = {
         )
         .then(()=>{
           console.log('Data loaded.')
-        })
-        .catch((err)=>{
-          console.error(err);
-        })
+
+        //   const makeInventory = function( product ) {
+        //     let query = 'INSERT INTO products_stores (product_id, store_id, reserved, quantity ) VALUES '; 
+        //     for (let i = 0; i < 10; i++ ) {
+        //       query += `(${product}, ${rand1k()}, 0, 10),`;
+        //     }
+        //     query += ';'
+        //     return query;
+        //   }
+        //   for( let i = 0; i < 10000000; i++ ) {
+        //     client.query(makeInventory(i));
+        //   }
+        //   console.log('Done with associations');
+        // })
+        // .catch((err)=>{
+        //   console.error(err);
+        // })
     })
     })
   }
