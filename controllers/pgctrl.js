@@ -59,10 +59,10 @@ const PGController = {
           const bulkWrite = function(operations, callback) {
             while (operations.length > 0 ) {
               const op = operations.pop();
-              client.query(op)
-              .catch((err) => {
-                callback(error)
-              })
+              // client.query(op)
+              // .catch((err) => {
+              //   callback(error)
+              // })
             }
             callback(null)
           }
