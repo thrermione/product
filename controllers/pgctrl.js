@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
-const { Client } = require('pg');
+// const { Client } = require('pg');
+const pgp = require('pg-promise')();
 const loadSchema = require('../lib/schema.js');
 const { rand1k } = require('../lib/randomluts.js');
 //const QueryStream = require('pg-query-stream');
@@ -11,17 +12,19 @@ const password = process.env.PASSWORD || 'cocacola';
 const host = process.env.HOST || 'localhost';
 const database = process.env.DATABASE || 'productservice';
 
+
 const filepath = path.join(__dirname, '..' , 'lib', 'csv');
 const PGController = {
 
   createClient: function() {
-    return new Client({
-      user,
-      password,
-      host,
-      port,
-      database
-    });
+    return pgp(`postgres://localhost:${pgport}/${database}`);
+    // return new Client({
+    //   user,
+    //   password,
+    //   host,
+    //   port,
+    //   database
+    // });
   },
 
   connectAndSeed: function(client) {
@@ -49,6 +52,7 @@ const PGController = {
         .then(()=>{
 
           console.log('Primary data loaded.')
+          const pgp = pgp(client);
 
           let csvStream = csv.createStream();
 
@@ -81,8 +85,8 @@ const PGController = {
           var stream = fs.createReadStream(`${filepath}/products.csv`);
           stream.pipe(csvStream)
             .on('end', (data)=>{
-              console.log('AAAAAAAAHHHHH!!!!!!');
-              })
+              console.log('10M rows processed');
+            })
             .on('data', (data) => {
               count++;
               console.log(data);
