@@ -63,9 +63,6 @@ const addressType = function() {
   return null;  
 }
 
-// pre-generate the product availability. 
-
-
 const products = csv();
 products.pipe(fs.createWriteStream('csvs/products.csv'));
 // spinal tap to 10M later

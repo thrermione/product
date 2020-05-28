@@ -108,7 +108,38 @@ const MongoController = {
           callback(null);
         })
       })
-  },
+  }, 
+
+  createInventories: function(db) {
+    //create an inventories collection
+    // we have 10k stores so 10k inventories.
+
+    const generateInventory = function(size) {
+      let inventory = [];
+      for( let i = 0; i < size; i++ ) {
+        const stock = {
+          sku: rand10m(),
+          quantity: rand1k()
+        }
+        inventory.push(stock);
+      }
+      return inventory;
+    }
+
+    for( let i = 0; i < 1000; i += 1 ) {
+      const store = i,
+      // then products
+    }
+
+    const nextStore = {
+      storeId: i,
+      products: []
+    }
+    nextStore.products.
+    //location
+    //producs
+  }
+
 
 
   createProducts: function(db) {
@@ -117,32 +148,14 @@ const MongoController = {
     const products = db.collection('products');
     products.createIndex({ sku: 1 });
     let productRows = [];
-
     readProducts.pipe(productsCsv)
         .on('error', (error) => {
             console.error(error);
           })
-        .on('data', (data) => { 
-
-          //per line of csv 
-          // i could associate the stores here? 
-          // I need 1K places this is available. 
-          // let availability = [];
-          // for( let i = 0; i < 1000; i++ ) {
-          //   let storeId = rand10k();
-          //   let inStock = rand1k();
-          //   let stock = {
-          //     store_id: storeId,
-          //     number_in_stock: inStock,
-          //   }
-          //   availability.push(stock);
-          // }
-
-         // const product = Object.assign( availability, data);
-          const row = { insertOne: data };
-
+        .on('data', (data) => {
+          const product = Object.assign( availability, data);
+          const row = { insertOne: product };
           productRows.push(row);
-
           if( productRows.length === 100000 ) {
             readProducts.pause();
             console.log('Bulkwriting');
