@@ -61,7 +61,7 @@ const PGController = {
             let query = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
             queue.push(query);
 
-            if( count < 9000 ) {
+            if( count < 1000 ) {
               // send the next query
               const nextQuery = queue.pop();
               client.query(nextQuery)
@@ -95,6 +95,8 @@ const PGController = {
           stream.on('end', (data)=>{
             console.log('AAAAAAAAHHHHH!!!!!!');
           });
+
+          
         })
       })
     })
