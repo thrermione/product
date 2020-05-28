@@ -79,9 +79,12 @@ const PGController = {
 
           stream.on('end', (data)=>{
             console.log('AAAAAAAAHHHHH!!!!!!');
+
           });
 
-          stream.on('data', (data) {
+          stream.on('data', (data) => {
+            console.log(data);
+            stream.pause();
             prepareInventoryForWrite(data[0]);
             if( count >= 1000 ) {
               stream.pause()
@@ -98,49 +101,16 @@ const PGController = {
           })
 
 
-
-            //if supercounter is less than the number you wanna see
-            // call makeinventory again 
-            // so whenever you hit the backlogs you stop and try again
-
-            if( count < 1000 ) {
-              // send the next query
-              const nextQuery = queue.pop();
-              client.query(nextQuery)
-              .then((res) => {
-                console.log(res);
-                count--;
-                console.log('Query sent meter at' + count)
-              })
-              .catch((err) => {
-                console.error(err)
-                // kill the whole 
-                // if supercounter < desiredtotal 
-                // call this funciton again 
-                // try a timeout 
-              })
-            } else {
-              // slow ur horses man. 
-              console.log(queue.length + ' queries in line');
-            }
-          }
-
           async function streamInventory(stream) {
             for await ( const row of stream ) {
-              makeInventory(row[0]);
+              prepareInventoryForWrite(row[0]);
             }
           }
-
-     //     sql = `SELECT id FROM products`;
-      //    var query = new QueryStream(sql);
-          // this won't avoid memory leak problems bc you can still load just
-          // tons and tons of rows into your application
-          // lt's just idk open up that CSV.
-         
-
           
         })
       })
-    }
+    })
+  }
+}
 
 module.exports = PGController; 
