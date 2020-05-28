@@ -49,19 +49,33 @@ const PGController = {
         .then(()=>{
           console.log('Data loaded.')
           var count = 0;
+          var queue = []
 
           const makeInventory = function(id){
+            count++;
             let values = '';
             for( let i = 0; i < 15; i += 1 ) {
               values += `(${id}, ${rand1k()}),`;
             }
             values += `(${id}, ${rand1k()})`;
-            let assoc = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
-            client.query(assoc)
-            .then(() => {
-              console.log(++count)
-              // We get to 9275.
-            })
+            let query = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
+            queue.push(query);
+
+            if( count < 9000 ) {
+              // send the next query
+              const nextQuery = queue.pop();
+              client.query(nextQuery)
+              .then((res) => {
+                count--;
+                console.log('Query sent meter at' + count)
+              })
+              .catch((err) => {
+                console.error(err)
+              })
+            } else {
+              // slow ur horses man. 
+              console.log(queue.length + ' queries in line');
+            }
           }
 
           async function streamInventory(stream) {
