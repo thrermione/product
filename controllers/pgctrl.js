@@ -2,7 +2,8 @@ const path = require('path');
 const { Client } = require('pg');
 const loadSchema = require('../lib/schema.js');
 const { rand1k } = require('../lib/randomluts.js');
-const QueryStream = require('pg-query-stream');
+//const QueryStream = require('pg-query-stream');
+const csv = require('csv-stream');
 const port = process.env.PGPORT || 5432;
 const user = process.env.DBUSER || 'productservice';
 const password = process.env.PASSWORD || 'cocacola';
@@ -67,14 +68,16 @@ const PGController = {
             }
           }
 
-          sql = `SELECT id FROM products`;
-          var query = new QueryStream(sql);
+     //     sql = `SELECT id FROM products`;
+      //    var query = new QueryStream(sql);
           // this won't avoid memory leak problems bc you can still load just
           // tons and tons of rows into your application
+          // lt's just idk open up that CSV.
           var stream = client.query(query);
           streamInventory(stream);
 
-          stream.on('data', (data)=>{console.log('data event triggered')});
+          // stream.on('data', (data)=>{
+          // });
         })
       })
     })
