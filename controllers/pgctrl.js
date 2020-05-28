@@ -28,40 +28,28 @@ const PGController = {
       client.query(loadSchema)
       .then(() => {
         console.log( 'Schema successfully loaded!!');
-        client.query(`
-          COPY products
-          FROM '${filepath}/products.csv'
-          WITH (format csv, header)
-        `)
-        .then(()=>{
-          console.log(`Products successfully copied into the database.`);
-          client.query(`
-            COPY locations
-            FROM ${filepath}/locations.csv
-            WITH (format csv, header)`
-          )
-          .then(()=>{
-            console.log('locations successfully copied');
-            client.query(`
-              COPY cities
-              FROM ${filepath/cities.csv}
-              WITH (format csv, header)`
-            )
-            .then(()=>{
+        client.query(
 
-            })
-          }
+          `COPY products
+          FROM '${filepath}/products.csv'
+          WITH (format csv, header);
+
+          COPY locations
+          FROM '${filepath}/stores.csv'
+          WITH (format csv, header);
+
+          COPY cities
+          FROM '${filepath}/cities.csv'
+          WITH (format csv, header);
+          `
+        )
+        .then(()=>{
+          console.log('Data loaded.')
         })
         .catch((err)=>{
-          console.error(`Error writing data into Postgres: ${err}`);
+          console.error(err);
         })
-      })
-      .catch((err) => {
-        console.error(`Error loading schema into Postgres: ${err}`);
-      })
     })
-    .catch((error) => {
-      console.error( `Error establishing Postgres connection: ${error}`);
     })
   }
 };
