@@ -50,8 +50,11 @@ const PGController = {
           console.log('Data loaded.')
           var count = 0;
           var queue = []
+          let supercounter = 0; 
 
           const makeInventory = function(id){
+            supercounter++;
+
             count++;
             let values = '';
             for( let i = 0; i < 15; i += 1 ) {
@@ -61,16 +64,25 @@ const PGController = {
             let query = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
             queue.push(query);
 
+            //if supercounter is less than the number you wanna see
+            // call makeinventory again 
+            // so whenever you hit the backlogs you stop and try again
+
             if( count < 1000 ) {
               // send the next query
               const nextQuery = queue.pop();
               client.query(nextQuery)
               .then((res) => {
+                console.log(res);
                 count--;
                 console.log('Query sent meter at' + count)
               })
               .catch((err) => {
                 console.error(err)
+                // kill the whole 
+                // if supercounter < desiredtotal 
+                // call this funciton again 
+                // try a timeout 
               })
             } else {
               // slow ur horses man. 
