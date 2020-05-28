@@ -34,11 +34,11 @@ const PGController = {
           FROM '${filepath}/products.csv'
           WITH (format csv, header);
 
-          COPY locations
+          COPY stores
           FROM '${filepath}/stores.csv'
           WITH (format csv, header);
 
-          COPY cities
+          COPY locations
           FROM '${filepath}/cities.csv'
           WITH (format csv, header);
           `
