@@ -73,7 +73,8 @@ const PGController = {
           // tons and tons of rows into your application
           var stream = client.query(query);
           streamInventory(stream);
-        
+
+          stream.on('data', (data)=>{console.log('data event triggered')});
         })
       })
     })
