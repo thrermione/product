@@ -52,9 +52,18 @@ const PGController = {
           var queue = []
           let supercounter = 0; 
 
-          const makeInventory = function(id){
-            supercounter++;
+          const bulkWrite = function(operations, callback) {
+            while (operations.length > 0 ) {
+              const op = operations.pop();
+              client.query(op)
+              .catch((err) => {
+                callback(error)
+              })
+            }
+            callback(null)
+          }
 
+          const prepareInventoryForWrite = function(id){
             count++;
             let values = '';
             for( let i = 0; i < 15; i += 1 ) {
@@ -63,6 +72,32 @@ const PGController = {
             values += `(${id}, ${rand1k()})`;
             let query = `INSERT INTO products_stores (product_id, store_id) VALUES ${values} RETURNING ID`;
             queue.push(query);
+          }
+
+          var stream = fs.createReadStream(`${filepath}/products.csv`);
+          streamInventory(stream);
+
+          stream.on('end', (data)=>{
+            console.log('AAAAAAAAHHHHH!!!!!!');
+          });
+
+          stream.on('data', (data) {
+            prepareInventoryForWrite(data[0]);
+            if( count >= 1000 ) {
+              stream.pause()
+              bulkWrite(queue, (err) => {
+                if(err) {
+                  console.log(err);
+                  return;
+                }
+                console.log('Bulkwrote');
+                count = 0; 
+                stream.resume();
+              })
+            } 
+          })
+
+
 
             //if supercounter is less than the number you wanna see
             // call makeinventory again 
@@ -101,18 +136,11 @@ const PGController = {
           // this won't avoid memory leak problems bc you can still load just
           // tons and tons of rows into your application
           // lt's just idk open up that CSV.
-          var stream = fs.createReadStream(`${filepath}/products.csv`);
-          streamInventory(stream);
-
-          stream.on('end', (data)=>{
-            console.log('AAAAAAAAHHHHH!!!!!!');
-          });
+         
 
           
         })
       })
-    })
-  }
-}
+    }
 
 module.exports = PGController; 
