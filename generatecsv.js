@@ -3,7 +3,7 @@ const fs = require('fs');
 const csv = require('csv-write-stream'); 
 const faker = require('faker');
 const path = require('path');
-const filepath = path.join(__dirname, '..' , 'lib', 'csv');
+const filepath = path.join(__dirname , 'lib', 'csv');
 
 const start = process.hrtime();
 
@@ -70,12 +70,17 @@ console.log(`Writing inventories at ${Date.now()}`);
 const inventories = csv();
 inventories.pipe(fs.createWriteStream(`${filepath}/inventories.csv`));
 for( var i = 1; i < 10000000; i += 1 ) {
-  inventories.write({
-    store_id: rand1k(),
-    sku: 1580255382 + i,
-    quantity: rand1k(),
-    reserved: 0
-  });
+
+  const newline = `${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n`;
+
+  // for( var j = 1; j < 5; j += 1 ) {
+  //   inventories.write({
+  //     store_id: rand1k(),
+  //     product_id: i,
+  //     quantity: rand1k(),
+  //     reserved: 0
+  //   });
+  // }
 }
 inventories.end();
 
