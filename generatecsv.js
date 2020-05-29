@@ -66,7 +66,68 @@ const addressType = function() {
   return null;  
 }
 
-// console.log(`Writing inventories at ${Date.now()}`);
+const writeProducts = function(writer, encoding, callback){
+  console.log('writeinventories');
+  let i = 10000000;
+  let id = 0;
+  const write = function() {
+    console.log('write');
+    let ok = true;
+    do {
+      i -= 1;
+      id += 1;
+      let data = `${i},${faker.commerce.productName()},${faker.commerce.price()},${i},0,${1580255382 + i}`;
+      if(i === 0) {
+        writer.write(data, encoding, callback);
+      } else {
+        ok = writer.write(data, encoding);
+      }
+    } while ( i > 0 && ok ) {
+      if ( i > 0 ) {
+        console.log('check for drain')
+        writer.once('drain', write)
+      }
+    }
+  }
+  write();
+
+}
+
+const writeStores = function(){
+  const stores = csv();
+  stores.pipe(fs.createWriteStream(`${filepath}/stores.csv`));
+  for( var j = 1; j < 10001; j+= 1 ) {
+    stores.write({
+      id: j,
+      name: faker.commerce.department(),
+      street_number: faker.random.number(),
+      street_number_suffix: streetSuffix(),
+      street_name: faker.address.streetName(),
+      street_type: streetType(),
+      street_direction: streetDirection(),
+      address_type: addressType(),
+      city_id: rand1k(),
+    })
+  }
+  stores.end();
+}
+
+const writeCities = function(){
+  const cities = csv();
+  cities.pipe(fs.createWriteStream(`${filepath}/cities.csv`));
+  for( var k = 1; k < 1001; k+=1 ) {
+    cities.write({
+      id: k,
+      name: faker.address.city(),
+      governing_district: faker.address.state(),
+      country: 'United States',
+      latitude: faker.address.latitude(),
+      longitude: faker.address.longitude(),
+      postal_code: faker.address.zipCode(),
+    })
+  }
+  cities.end();
+}
 
 const writeInventories = function(writer, encoding, callback) {
   console.log('writeinventories');
@@ -96,54 +157,14 @@ const writeInventories = function(writer, encoding, callback) {
 
 const invStream = fs.createWriteStream(`${filepath}/inventories.csv`);
 invStream.write('id,store_id,product_id,quantity\n', 'utf8');
-writeInventories(invStream, 'utf-8', ()=>{invStream.end()});
+writeInventories(invStream, 'utf-8', () => {
+  invStream.end();
 
-const writeProducts = function(){
-  const products = csv();
-  products.pipe(fs.createWriteStream(`${filepath}/products.csv`));
-  for( var i = 1; i < 10000000; i+= 1 ) {
-    products.write({
-      id: i,
-      name: faker.commerce.productName(),
-      price: faker.commerce.price(),
-      sku: 1580255382 + i,
-      view_count: 0,
-      created_at: 1580255382 + i,
-    });
-  }
-  products.end();
-  console.log(`Products complete ${Date.now()}`);  
-}
-
-
-const stores = csv();
-stores.pipe(fs.createWriteStream(`${filepath}/stores.csv`));
-for( var j = 1; j < 10001; j+= 1 ) {
-  stores.write({
-    id: j,
-    name: faker.commerce.department(),
-    street_number: faker.random.number(),
-    street_number_suffix: streetSuffix(),
-    street_name: faker.address.streetName(),
-    street_type: streetType(),
-    street_direction: streetDirection(),
-    address_type: addressType(),
-    city_id: rand1k(),
-  })
-}
-stores.end();
-
-const cities = csv();
-cities.pipe(fs.createWriteStream(`${filepath}/cities.csv`));
-for( var k = 1; k < 1001; k+=1 ) {
-  cities.write({
-    id: k,
-    name: faker.address.city(),
-    governing_district: faker.address.state(),
-    country: 'United States',
-    latitude: faker.address.latitude(),
-    longitude: faker.address.longitude(),
-    postal_code: faker.address.zipCode(),
-  })
-}
-cities.end();
+  const prodStream = fs.createWriteStream(`${filepath}/products.csv`);  
+  prodStream.write('id,name,price,sku,view_count,created_at\n', 'utf8');
+  writeProducts(prodStream, 'utf-8', () => {
+    prodStream.end();
+  });
+  writeCities();
+  writeStores();
+});
