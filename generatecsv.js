@@ -68,51 +68,53 @@ const addressType = function() {
 
 // console.log(`Writing inventories at ${Date.now()}`);
 
-// const writeInventories = function(writer, encoding, callback) {
-//   console.log('writeinventories');
-//   let i = 10000000;
-//   let id = 0;
-//   const write = function() {
-//     console.log('write');
-//     let ok = true;
-//     do {
-//       i -= 1;
-//       let data = `${id+1},${rand1k()},i,${rand1k()}\n${id+2},${rand1k()},i,${rand1k()}\n${id+3},${rand1k()},i,${rand1k()}\n${id+4},${rand1k()},i,${rand1k()}\n${id+5},${rand1k()},i,${rand1k()}`;
-//       id += 5;
-//       if(i === 0) {
-//         writer.write(data, encoding, callback);
-//       } else {
-//         ok = writer.write(data, encoding);
-//       }
-//     } while ( i > 0 && ok ) {
-//       if ( i > 0 ) {
-//         console.log('check for drain')
-//         writer.once('drain', write)
-//       }
-//     }
-//   }
-//   write();
-// }
-
-// const invStream = fs.createWriteStream(`${filepath}/inventories.csv`);
-// invStream.write('id,store_id,product_id,quantity', 'utf8');
-// writeInventories(invStream, 'utf-8', ()=>{invStream.end()});
-  
-const products = csv();
-products.pipe(fs.createWriteStream(`${filepath}/products.csv`));
-
-for( var i = 1; i < 10000000; i+= 1 ) {
-  products.write({
-    id: i,
-    name: faker.commerce.productName(),
-    price: faker.commerce.price(),
-    sku: 1580255382 + i,
-    view_count: 0,
-    created_at: 1580255382 + i,
-  });
+const writeInventories = function(writer, encoding, callback) {
+  console.log('writeinventories');
+  let i = 10000000;
+  let id = 0;
+  const write = function() {
+    console.log('write');
+    let ok = true;
+    do {
+      i -= 1;
+      let data = `${id+1},${rand1k()},i,${rand1k()}\n${id+2},${rand1k()},i,${rand1k()}\n${id+3},${rand1k()},i,${rand1k()}\n${id+4},${rand1k()},i,${rand1k()}\n${id+5},${rand1k()},i,${rand1k()}\n`;
+      id += 5;
+      if(i === 0) {
+        writer.write(data, encoding, callback);
+      } else {
+        ok = writer.write(data, encoding);
+      }
+    } while ( i > 0 && ok ) {
+      if ( i > 0 ) {
+        console.log('check for drain')
+        writer.once('drain', write)
+      }
+    }
+  }
+  write();
 }
-products.end();
-console.log(`Products complete ${Date.now()}`);
+
+const invStream = fs.createWriteStream(`${filepath}/inventories.csv`);
+invStream.write('id,store_id,product_id,quantity\n', 'utf8');
+writeInventories(invStream, 'utf-8', ()=>{invStream.end()});
+
+const writeProducts = function(){
+  const products = csv();
+  products.pipe(fs.createWriteStream(`${filepath}/products.csv`));
+  for( var i = 1; i < 10000000; i+= 1 ) {
+    products.write({
+      id: i,
+      name: faker.commerce.productName(),
+      price: faker.commerce.price(),
+      sku: 1580255382 + i,
+      view_count: 0,
+      created_at: 1580255382 + i,
+    });
+  }
+  products.end();
+  console.log(`Products complete ${Date.now()}`);  
+}
+
 
 const stores = csv();
 stores.pipe(fs.createWriteStream(`${filepath}/stores.csv`));
