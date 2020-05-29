@@ -41,61 +41,14 @@ const PGController = {
         COPY locations
         FROM '${filepath}/cities.csv'
         WITH (format csv, header);
-            `
+
+        COPY products_stores
+        FROM '${filepath}/inventories.csv'
+        WITH (format csv, header);
+      `
       )
         .then(()=>{
-          console.log('Primary records loaded.')
-          let csvStream = csv.createStream();
-          var count = 0;
-          var queue = []
-
-          const columns = new pgp.helpers.ColumnSet(['product_id', 'store_id', 'quantity'], {table: 'products_stores'});
-          
-          const bulkWrite = function(operations, callback) {
-            const query = pgp.helpers.insert(queue, columns);
-            client.none(query).then(function(){
-              queue = [];
-              callback(null)
-            })
-            .catch((err) => {
-              console.log(err);
-              stream.pause();
-            })   
-          }
-
-          const prepareInventoryForWrite = function(id) {
-            for( let i = 0; i < 4; i += 1 ) {
-             let value = {
-                product_id: id,
-                store_id: rand1k(),
-                quantity: rand1k(),
-              };
-              queue.push(value);
-            }
-          }
-
-          var stream = fs.createReadStream(`${filepath}/products.csv`);
-          stream.pipe(csvStream)
-            .on('end', (data)=>{
-              console.log('10M rows processed');
-            })
-            .on('data', (data) => {
-              count++;
-              prepareInventoryForWrite(data.id);
-              if( count >= 1000 ) {
-                stream.pause()
-                bulkWrite(queue, (err) => {
-                  if(err) {
-                    console.log(err);
-                    return;
-                  }
-                  leftover -= 1000
-                  console.log(`Bulkwrite complete, ${leftover} remaining.`);
-                  count = 0; 
-                  stream.resume();
-                })
-              } 
-          })
+          console.log('Records loaded.')
         })
         .catch((err)=>{
           console.error(err);

@@ -76,7 +76,7 @@ const writeProducts = function(writer, encoding, callback){
     do {
       i -= 1;
       id += 1;
-      let data = `${i},${faker.commerce.productName()},${faker.commerce.price()},${i},0,${1580255382 + i}`;
+      let data = `${i},${faker.commerce.productName()},${faker.commerce.price()},${i},0,${1580255382 + i}\n`;
       if(i === 0) {
         writer.write(data, encoding, callback);
       } else {
@@ -90,8 +90,9 @@ const writeProducts = function(writer, encoding, callback){
     }
   }
   write();
-
 }
+
+
 
 const writeStores = function(){
   const stores = csv();
@@ -138,7 +139,7 @@ const writeInventories = function(writer, encoding, callback) {
     let ok = true;
     do {
       i -= 1;
-      let data = `${id+1},${rand1k()},i,${rand1k()}\n${id+2},${rand1k()},i,${rand1k()}\n${id+3},${rand1k()},i,${rand1k()}\n${id+4},${rand1k()},i,${rand1k()}\n${id+5},${rand1k()},i,${rand1k()}\n`;
+      let data = `${id+1},${rand1k()},${i},${rand1k()}\n${id+2},${rand1k()},${i},${rand1k()}\n${id+3},${rand1k()},${i},${rand1k()}\n${id+4},${rand1k()},${i},${rand1k()}\n${id+5},${rand1k()},${i},${rand1k()}\n`;
       id += 5;
       if(i === 0) {
         writer.write(data, encoding, callback);
@@ -165,6 +166,7 @@ writeInventories(invStream, 'utf-8', () => {
   writeProducts(prodStream, 'utf-8', () => {
     prodStream.end();
   });
+
   writeCities();
   writeStores();
 });
