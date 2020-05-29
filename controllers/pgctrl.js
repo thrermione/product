@@ -25,6 +25,7 @@ const PGController = {
   },
 
   connectAndSeed: function(client) {
+    var leftover = 10000000;
     client.none(loadSchema)
     .then(()=>{
       console.log('Schema loaded.');
@@ -47,15 +48,30 @@ const PGController = {
           let csvStream = csv.createStream();
           var count = 0;
           var queue = []
+
+          const columns = new pgp.helpers.ColumnSet(['product_id', 'store_id', 'quantity'], {table: 'products_stores'});
           
           const bulkWrite = function(operations, callback) {
-            //perform the bulkwrite.
-            callback(null)
+            const query = pgp.helpers.insert(queue, columns);
+            client.none(query).then(function(){
+              queue = [];
+              callback(null)
+            })
+            .catch((err) => {
+              console.log(err);
+              stream.pause();
+            })   
           }
 
-          const prepareInventoryForWrite = function(id){
-            count++;
-            //make the inventory object.
+          const prepareInventoryForWrite = function(id) {
+            for( let i = 0; i < 4; i += 1 ) {
+             let value = {
+                product_id: id,
+                store_id: rand1k(),
+                quantity: rand1k(),
+              };
+              queue.push(value);
+            }
           }
 
           var stream = fs.createReadStream(`${filepath}/products.csv`);
@@ -73,7 +89,8 @@ const PGController = {
                     console.log(err);
                     return;
                   }
-                  console.log('Bulkwrote');
+                  leftover -= 1000
+                  console.log(`Bulkwrite complete, ${leftover} remaining.`);
                   count = 0; 
                   stream.resume();
                 })
@@ -84,8 +101,7 @@ const PGController = {
           console.error(err);
         })
     })
-    
-      }
-    }
+  } 
+}
 
 module.exports = PGController; 
