@@ -66,24 +66,38 @@ const addressType = function() {
   return null;  
 }
 
-console.log(`Writing inventories at ${Date.now()}`);
-const inventories = csv();
-inventories.pipe(fs.createWriteStream(`${filepath}/inventories.csv`));
-for( var i = 1; i < 10000000; i += 1 ) {
+// console.log(`Writing inventories at ${Date.now()}`);
 
-  const newline = `${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n${rand1k()},i,${rand1k()}\n`;
+// const writeInventories = function(writer, encoding, callback) {
+//   console.log('writeinventories');
+//   let i = 10000000;
+//   let id = 0;
+//   const write = function() {
+//     console.log('write');
+//     let ok = true;
+//     do {
+//       i -= 1;
+//       let data = `${id+1},${rand1k()},i,${rand1k()}\n${id+2},${rand1k()},i,${rand1k()}\n${id+3},${rand1k()},i,${rand1k()}\n${id+4},${rand1k()},i,${rand1k()}\n${id+5},${rand1k()},i,${rand1k()}`;
+//       id += 5;
+//       if(i === 0) {
+//         writer.write(data, encoding, callback);
+//       } else {
+//         ok = writer.write(data, encoding);
+//       }
+//     } while ( i > 0 && ok ) {
+//       if ( i > 0 ) {
+//         console.log('check for drain')
+//         writer.once('drain', write)
+//       }
+//     }
+//   }
+//   write();
+// }
 
-  // for( var j = 1; j < 5; j += 1 ) {
-  //   inventories.write({
-  //     store_id: rand1k(),
-  //     product_id: i,
-  //     quantity: rand1k(),
-  //     reserved: 0
-  //   });
-  // }
-}
-inventories.end();
-
+// const invStream = fs.createWriteStream(`${filepath}/inventories.csv`);
+// invStream.write('id,store_id,product_id,quantity', 'utf8');
+// writeInventories(invStream, 'utf-8', ()=>{invStream.end()});
+  
 const products = csv();
 products.pipe(fs.createWriteStream(`${filepath}/products.csv`));
 
