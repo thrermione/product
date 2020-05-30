@@ -1,7 +1,7 @@
 // https://www.youtube.com/watch?v=zNjVFOo3eO0
 const express = require('express');
 const serverport = process.env.PORT || 3000;
-const db = require('./controllers/pgctrl.js');
+const db = require('./controllers/mongoctrl.js');
 
 const app = express();
 let client = db.createClient();

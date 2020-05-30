@@ -26,6 +26,7 @@ const MongoController = {
   // and also probalby the # in stock
 
   connectAndSeed: function(client) {
+    const start = Date.now();
     client.connect(function(err) {
       if(err) {
         console.error(err);
@@ -42,7 +43,12 @@ const MongoController = {
             console.log(err);
             return;
           }
-          MongoController.createProducts(db);
+          MongoController.createProducts(db, () => {
+            MongoController.createInventories(db, () => {
+              const finish = Date.now();
+              console.log(`Finished in ${start - finish} ms.`)
+            });
+          });
         });
       })
     });
@@ -82,6 +88,7 @@ const MongoController = {
         const currcity = cities[i];
         const store = {
           insertOne: {
+            storeId: data.id,
             name: data.name,
             street_number: data.street_number,
             street_number_suffix: data.street_number_suffix,
@@ -110,17 +117,54 @@ const MongoController = {
       })
   },
 
-  createProducts: function(db) {
+  createInventories: function(db, callback) {
+    const readInventories = fs.createReadStream(`${filepath}/inventories.csv`);
+    const inventoriesCsv = csv.createStream();
+    const inventories = db.collection('inventories');
+
+    inventories.createIndex({product_id: 1});
+    inventories.createIndex({store_id: 1});
+    let inventory = [];
+
+    readInventories.pipe(inventoriesCsv)
+      .on('error', (error) => {
+          console.error(error);
+        })
+      .on('data', (data) => {
+        const row = { insertOne: data };
+        inventory.push(row);
+        if( inventory.length === 100000 ) {
+          readInventories.pause();
+          console.log('Bulkwriting');
+          inventories.bulkWrite(inventory)
+          .then(()=>{
+            inventory = [];
+            readInventories.resume();
+          })
+          .catch((err) => {
+            console.error(err);
+          })  
+        }
+      })
+      .on('end', (rowCount) => {
+        console.log(`Inventory parsed.`);
+        if( inventory.length > 0 ) {
+          inventories.bulkWrite(inventory)
+          .catch((err) => {
+            console.log("error")
+          });
+        }
+      });
+  },
+
+  createProducts: function(db, callback) {
     console.log( Date.now() );
     const readProducts = fs.createReadStream(`${filepath}/products.csv`);
     const productsCsv = csv.createStream();
     const products = db.collection('products');
-    const inventories = db.collection('inventory');
    
     products.createIndex({ sku: 1 });
-    inventories.createIndex({product_sku: 1});
-    inventories.createIndex({store_id: 1});
-
+  
     let productRows = [];
     let inventory = [];
 
@@ -130,57 +174,33 @@ const MongoController = {
         })
       .on('data', (data) => {
         const row = { insertOne: data };
-
-        const stock = {
-          insertOne: {
-            store_id: rand10k(),
-            product_sku: data.sku, 
-            quantity: rand1k(),
-            reserved: 0
-          }
-        };
-
-        inventory.push(stock);
         productRows.push(row);
-
         if( productRows.length === 100000 ) {
           readProducts.pause();
-          console.log('Bulkwriting');
-          inventories.bulkWrite(inventory)
-          .then(()=>{
-            products.bulkWrite(productRows)
-            .then((res) => {
-              productRows = [];
-              inventory = [];
-              readProducts.resume();
-            })
-            .catch((err) => {
-              console.error(err);
-            })
+          console.log('Bulkwriting');   
+          products.bulkWrite(productRows)
+          .then((res) => {
+            productRows = [];
+            readProducts.resume();
           })
           .catch((err) => {
             console.error(err);
-          });  
+          })  
         }
-
-        })
-        .on('end', (rowCount) => {
-          console.log(`Products parsed.`);
-          if( productRows.length > 0 ) {
-            inventories.bulkWrite(inventory)
-            .catch((err)=>{
-              console.log("error")
-            });
-
-            products.bulkWrite(productRows)
-            .then((res) => {
-              console.log( `Products loaded into database by ${Date.now()}`);
-            })
-            .catch((err) => {
-              console.error(err);
-            });
-          }
-        });
+      })
+      .on('end', (rowCount) => {
+        console.log(`Products parsed.`);
+        if( productRows.length > 0 ) {
+          products.bulkWrite(productRows)
+          .then((res) => {
+            console.log( `Products loaded into database by ${Date.now()}`);
+            callback();
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+        }
+      });
   }
 }
 
