@@ -17,14 +17,6 @@ const MongoController = {
     return new MongoClient(`mongodb://${host}`);
   },
 
-  // take the inventory out of the stors and put it in the product. 
-  // the product tells you waht stores its available in. 
-
-  // key in it that is like "avaiable_at"
-  // the value of available_at is an array
-  // the objects in that array are the object ids or some other means of ref. ideally objids of the particular stores, 
-  // and also probalby the # in stock
-
   connectAndSeed: function(client) {
     const start = Date.now();
     client.connect(function(err) {
